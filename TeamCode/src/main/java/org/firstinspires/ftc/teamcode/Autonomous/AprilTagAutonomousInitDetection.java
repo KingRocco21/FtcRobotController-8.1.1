@@ -111,6 +111,18 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
         BL.setPower(0);
     }
 
+    private void moveBackward(double backwardSeconds) {
+        FR.setPower(-0.5);
+        FL.setPower(-0.5);
+        BR.setPower(-0.5);
+        BL.setPower(-0.5);
+        sleep((long) (1000 * backwardSeconds));
+        FR.setPower(0);
+        FL.setPower(0);
+        BR.setPower(0);
+        BL.setPower(0);
+    }
+
     /**
      * This function is executed when this Op Mode is selected from the Driver Station.
      */
@@ -258,18 +270,20 @@ public class AprilTagAutonomousInitDetection extends LinearOpMode
             //what to do if nothing is detected
         }else if(tagOfInterest.id == LEFT){
             //left path
-            moveForward(2);
-            moveLeft(1.2);
-            moveForward(1);
+            moveForward(1.8);
+            moveBackward(0.2);
+            moveLeft(1.5);
+            moveForward(1.1);
         }else if(tagOfInterest.id == MIDDLE){
             //middle path
-            moveForward(2);
+            moveForward(2.7);
             moveRight(0.3);
         }else{
             //right path
-            moveForward(2);
-            moveRight(1.4);
-            moveForward(1);
+            moveForward(1.55);
+            moveBackward(0.2);
+            moveRight(1.7);
+            moveForward(0.7);
         }
         verticalArm.setTargetPosition(0);
         clawLift.setPosition(0.5);
