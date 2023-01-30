@@ -62,8 +62,8 @@ public class OdometryCalibration extends LinearOpMode {
     }
 
     private void calibrateOdometry() {
-        int encoderDifference;
-        float verticalEncoderTickOffsetPerDegree;
+        double encoderDifference;
+        double verticalEncoderTickOffsetPerDegree;
         double wheelBaseSeparation;
 
         BL.setPower(-0.2);
@@ -86,7 +86,7 @@ public class OdometryCalibration extends LinearOpMode {
         horizontalTickOffsetRadians = FR.getCurrentPosition() / getZRadians();
 
         //Write the constants to text files
-        ReadWriteFile.writeFile(robotEncoderWheelDistanceFile, String.valueOf(wheelBaseSeparation));
+        ReadWriteFile.writeFile(robotEncoderWheelDistanceFile, String.valueOf(robotEncoderWheelDistance));
         ReadWriteFile.writeFile(horizontalTickOffsetFile, String.valueOf(horizontalTickOffsetRadians));
 
         //Display calculated constants

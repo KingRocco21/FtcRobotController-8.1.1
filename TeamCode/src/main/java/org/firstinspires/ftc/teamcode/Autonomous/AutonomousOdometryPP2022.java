@@ -6,13 +6,15 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import java.io.File;
 
 @Autonomous(name = "AutonomousOdometryPP2022 Blocks to Java", preselectTeleOp = "TeleOp")
 public class AutonomousOdometryPP2022 extends LinearOpMode {
@@ -29,18 +31,29 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     private Servo clawLift;
     private ColorSensor color1;
 
-    BNO055IMU.Parameters storedValues;
     int countsPerInch;
     float wheelPowerTlBr;
-    int robotEncoderWheelDistance;
-    int robotXCoordinate;
+    double robotEncoderWheelDistance;
     double horizontalTickOffsetRadians;
-    int robotYCoordinate;
-    int previousLeftEncoderPosition;
-    int robotOrientationRadians;
-    int previousRightEncoderPosition;
-    int robotXCoordinateInches;
-    int previousNormalEncoderPosition;
+    double robotXCoordinate;
+    double robotYCoordinate;
+    double robotOrientationRadians;
+    double previousLeftEncoderPosition;
+    double previousRightEncoderPosition;
+    double previousNormalEncoderPosition;
+    double robotXCoordinateInches;
+    double robotYCoordinateInches;
+
+    double spinnerTargetDegrees;
+    double armTargetDegrees;
+    double extenderTargetDistance;
+
+    Position junctionCoordinates;
+    Position robotPosition;
+
+    //Files to access the algorithm constants
+    private File robotEncoderWheelDistanceFile = AppUtil.getInstance().getSettingsFile("robotEncoderWheelDistance.txt");
+    private File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
 
     /**
      * Describe this function...
@@ -65,7 +78,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     /**
-     * Describe this function...
+     * This function Initializes the IMU to get the Z Angle later.
      */
     private void Initialize_IMU() {
         BNO055IMU.Parameters IMUparameters;
@@ -88,6 +101,46 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     /**
+     * This function calculates the x and y position of the robot, along with its orientation.
+     */
+    private void Odometry() {
+        double leftChange;
+        double rightChange;
+        double changeInRobotOrientation;
+        double rawHorizontalChange;
+        double horizontalChange;
+        double verticalChange;
+
+        // Save the change in each encoder position to a variable
+        leftChange = leftEncoder.getCurrentPosition() - previousLeftEncoderPosition;
+        rightChange = BL.getCurrentPosition() - previousRightEncoderPosition;
+        // Calculate Angle
+        changeInRobotOrientation = (leftChange - rightChange) / robotEncoderWheelDistance;
+        robotOrientationRadians += changeInRobotOrientation;
+        // Calculate the horizontal change using the middle encoder
+        rawHorizontalChange = FR.getCurrentPosition() - previousNormalEncoderPosition;
+        horizontalChange = rawHorizontalChange - (changeInRobotOrientation * horizontalTickOffsetRadians);
+        verticalChange = (rightChange + leftChange) / 2;
+        // Calculate Position
+        robotXCoordinate += verticalChange * Math.sin(robotOrientationRadians) + horizontalChange * Math.cos(robotOrientationRadians);
+        robotYCoordinate += verticalChange * Math.cos(robotOrientationRadians) - horizontalChange * Math.sin(robotOrientationRadians);
+        // Converts the X and Y coordinates to inches
+        robotXCoordinateInches = robotXCoordinate / countsPerInch;
+        robotYCoordinateInches = robotYCoordinate / countsPerInch;
+        // Save the position values to variables for use in the next loop
+        previousLeftEncoderPosition = leftEncoder.getCurrentPosition();
+        previousRightEncoderPosition = BL.getCurrentPosition();
+        previousNormalEncoderPosition = FR.getCurrentPosition();
+        telemetry.addData("robotXCoordinate", robotXCoordinate);
+        telemetry.addData("robotYCoordinate", robotYCoordinate);
+        telemetry.addData("robotXCoordinateInches", robotXCoordinateInches);
+        telemetry.addData("robotYCoordinateInches", robotYCoordinateInches);
+        telemetry.addData("robotOrientationRadians", robotOrientationRadians);
+        telemetry.addData("robotOrientationDegrees", Math.toDegrees(robotOrientationRadians));
+        telemetry.update();
+    }
+
+    /**
      * This function is executed when this Op Mode is selected from the Driver Station.
      */
     @Override
@@ -106,14 +159,17 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
 
         // Initialize variables.
         countsPerInch = 1875;
-        robotEncoderWheelDistance = 12026;
-        horizontalTickOffsetRadians = 12194;
+        robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(robotEncoderWheelDistanceFile).trim());
+        horizontalTickOffsetRadians = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
         previousLeftEncoderPosition = 0;
         previousRightEncoderPosition = 0;
         previousNormalEncoderPosition = 0;
         robotOrientationRadians = 0;
         robotXCoordinate = 0;
         robotYCoordinate = 0;
+        robotXCoordinateInches = 0;
+        robotYCoordinateInches = 0;
+
         // Initialize motors and encoders.
         BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -140,25 +196,20 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         extender.setPower(1);
         spinner.setPower(1);
         clawLift.setPosition(1);
-        // Init the IMU (will reset Z orientation to 0)
+
+        // Initialize robot position and junction position
+        junctionCoordinates = new Position(DistanceUnit.INCH, 48, 72, 16.25, System.nanoTime());
+
         waitForStart();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 Odometry();
+                robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
             }
             // end
         }
     }
 
-    /**
-     * Describe this function...
-     */
-    private void CreateStorageFile() {
-        storedValues = new BNO055IMU.Parameters();
-        storedValues.i2cAddr = I2cAddr.create7bit(robotXCoordinate);
-        storedValues.i2cAddr = I2cAddr.create8bit(robotYCoordinate);
-        // Inputs the parameters into a file
-    }
 
     /**
      * Describe this function...
@@ -208,96 +259,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     /**
      * Describe this function...
      */
-    private void calibrateOdometry() {
-        int encoderDifference;
-        float verticalEncoderTickOffsetPerDegree;
-        double wheelBaseSeparation;
-
-        BL.setPower(-0.2);
-        BR.setPower(0.2);
-        FL.setPower(0.2);
-        FR.setPower(-0.2);
-        while (getZAngle() < 90 && opModeIsActive()) {
-        }
-        BL.setPower(0);
-        BR.setPower(0);
-        FL.setPower(0);
-        FR.setPower(0);
-        sleep(1000);
-        encoderDifference = Math.abs(leftEncoder.getCurrentPosition()) + Math.abs(BL.getCurrentPosition());
-        verticalEncoderTickOffsetPerDegree = encoderDifference / getZAngle();
-        wheelBaseSeparation = (2 * 90 * verticalEncoderTickOffsetPerDegree) / (Math.PI * countsPerInch);
-        robotEncoderWheelDistance = (int) (wheelBaseSeparation * countsPerInch);
-        horizontalTickOffsetRadians = FR.getCurrentPosition() / (getZAngle() * (Math.PI / 180));
-        telemetry.addData("IMU Angle", getZAngle());
-        telemetry.addData("Left Encoder", -leftEncoder.getCurrentPosition());
-        telemetry.addData("Right Encoder", BL.getCurrentPosition());
-        telemetry.addData("Middle Encoder", FR.getCurrentPosition());
-        telemetry.addData("WheelBaseSeparation", wheelBaseSeparation);
-        telemetry.addData("horizontalTickOffsetRadians", horizontalTickOffsetRadians);
-        telemetry.update();
-        sleep(1000000);
-    }
-
-    /**
-     * Describe this function...
-     */
-    /*private void TeleOpRead() {
-        BNO055IMU.Parameters storedValues2;
-
-        // Reads from the imu's file and puts our coordinates into imu parameters
-        storedValues.calibrationDataFile = "storedValues.json";
-        robotXCoordinate = storedValues.i2cAddr.get7Bit();
-        robotYCoordinate = storedValues.i2cAddr.get8Bit();
-        // Reads from the imu's second file and does the same thing
-        storedValues2.calibrationDataFile = "storedValues2.json";
-        robotOrientationRadians = storedValues2.i2cAddr.get7Bit();
-    }
-*/
-    /**
-     * Describe this function...
-     */
-    private void Odometry() {
-        double leftChange;
-        double rightChange;
-        double changeInRobotOrientation;
-        int rawHorizontalChange;
-        double horizontalChange;
-        double verticalChange;
-        int robotYCoordinateInches;
-
-        // Save the change in each encoder position to a variable
-        leftChange = leftEncoder.getCurrentPosition() - previousLeftEncoderPosition;
-        rightChange = BL.getCurrentPosition() - previousRightEncoderPosition;
-        // Calculate Angle
-        changeInRobotOrientation = (leftChange - rightChange) / robotEncoderWheelDistance;
-        robotOrientationRadians += changeInRobotOrientation;
-        // Calculate the horizontal change using the middle encoder
-        rawHorizontalChange = FR.getCurrentPosition() - previousNormalEncoderPosition;
-        horizontalChange = rawHorizontalChange - changeInRobotOrientation * horizontalTickOffsetRadians;
-        verticalChange = (rightChange + leftChange) / 2;
-        // Calculate Position
-        robotXCoordinate += verticalChange * Math.sin(robotOrientationRadians / 180 * Math.PI) + horizontalChange * Math.cos(robotOrientationRadians / 180 * Math.PI);
-        robotYCoordinate += verticalChange * Math.cos(robotOrientationRadians / 180 * Math.PI) - horizontalChange * Math.sin(robotOrientationRadians / 180 * Math.PI);
-        // Converts the X and Y coordinates to inches
-        robotXCoordinateInches = robotXCoordinate / countsPerInch;
-        robotYCoordinateInches = robotYCoordinate / countsPerInch;
-        // Save the position values to variables for use in the next loop
-        previousLeftEncoderPosition = leftEncoder.getCurrentPosition();
-        previousRightEncoderPosition = BL.getCurrentPosition();
-        previousNormalEncoderPosition = FR.getCurrentPosition();
-        telemetry.addData("robotXCoordinate", robotXCoordinate);
-        telemetry.addData("robotYCoordinate", robotYCoordinate);
-        telemetry.addData("robotXCoordinateInches", robotXCoordinateInches);
-        telemetry.addData("robotYCoordinateInches", robotYCoordinateInches);
-        telemetry.addData("robotOrientationRadians", robotOrientationRadians);
-        telemetry.addData("robotOrientationDegrees", robotOrientationRadians * (180 / Math.PI));
-        telemetry.update();
-    }
-
-    /**
-     * Describe this function...
-     */
     private void goToPosition(int xInches, int yInches, int motorPower, int desiredOrientation) {
         direction_factor(getZAngle() - desiredOrientation);
         while (xInches != robotXCoordinateInches && yInches != robotXCoordinateInches) {
@@ -324,5 +285,24 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
             wheelPowerTrBl = 1;
             wheelPowerTlBr = heading * 4 - 7;
         }
+    }
+
+    private void MoveArmPosition(Position position) {
+
+        position = new Position(DistanceUnit.INCH, position.x - robotPosition.x, position.y - robotPosition.y, position.z - robotPosition.z, System.nanoTime());
+        // Move Arm to an XYZ Coordinate (Inches)
+        // Set Spinner Target to the tan of x and y, converting it to degrees
+        spinnerTargetDegrees = Math.atan2(position.y, position.x) / Math.PI * 180;
+        // Set Arm Target to tan of of horizontal distance and Z, converting it to degrees
+        armTargetDegrees = Math.atan2(position.z, Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.y, 2))) / Math.PI * 180;
+        // Set Extender Distance using Distance Formula
+        extenderTargetDistance = Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.y, 2) + Math.pow(position.z, 2));
+        if (spinnerTargetDegrees < 0) {
+            spinnerTargetDegrees += 180;
+        } else if (spinnerTargetDegrees >= 0) {
+            spinnerTargetDegrees += -180;
+        }
+        telemetry.addData("key", position.x);
+        telemetry.update();
     }
 }
