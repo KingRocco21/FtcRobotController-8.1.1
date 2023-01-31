@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -29,6 +31,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     private DcMotor spinner;
     private DcMotor verticalArm;
     private Servo clawLift;
+    private CRServo claw;
     private ColorSensor color1;
 
     int countsPerInch;
@@ -43,10 +46,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     double previousNormalEncoderPosition;
     double robotXCoordinateInches;
     double robotYCoordinateInches;
-
-    double spinnerTargetDegrees;
-    double armTargetDegrees;
-    double extenderTargetDistance;
 
     Position junctionCoordinates;
     Position robotPosition;
@@ -107,6 +106,9 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
      */
     @Override
     public void runOpMode() {
+        ElapsedTime Timer;
+        int colorNumber;
+
         FR = hardwareMap.get(DcMotor.class, "FR");
         FL = hardwareMap.get(DcMotor.class, "FL");
         BR = hardwareMap.get(DcMotor.class, "BR");
@@ -164,6 +166,9 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
 
         waitForStart();
         if (opModeIsActive()) {
+            //spinner.setTargetPosition(DegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
+            //verticalArm.setTargetPosition(-DegreesToTicks((int) Arm.getArmTargetDegrees()));
+            //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
             while (opModeIsActive()) {
                 Odometry.Odometry();
                 robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
@@ -256,22 +261,11 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         }
     }
 
-    private void MoveArmPosition(Position position) {
+    private int DegreesToTicks(int Degrees) {
+        return Degrees * (16384 / 360);
+    }
 
-        position = new Position(DistanceUnit.INCH, position.x - robotPosition.x, position.y - robotPosition.y, position.z - robotPosition.z, System.nanoTime());
-        // Move Arm to an XYZ Coordinate (Inches)
-        // Set Spinner Target to the tan of x and y, converting it to degrees
-        spinnerTargetDegrees = Math.atan2(position.y, position.x) / Math.PI * 180;
-        // Set Arm Target to tan of of horizontal distance and Z, converting it to degrees
-        armTargetDegrees = Math.atan2(position.z, Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.y, 2))) / Math.PI * 180;
-        // Set Extender Distance using Distance Formula
-        extenderTargetDistance = Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.y, 2) + Math.pow(position.z, 2));
-        if (spinnerTargetDegrees < 0) {
-            spinnerTargetDegrees += 180;
-        } else if (spinnerTargetDegrees >= 0) {
-            spinnerTargetDegrees += -180;
-        }
-        telemetry.addData("key", position.x);
-        telemetry.update();
+    private int InchesToTicks(int Inches) {
+        return -(Inches * 118);
     }
 }
