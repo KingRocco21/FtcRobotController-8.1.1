@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -34,7 +35,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     private CRServo claw;
     private ColorSensor color1;
 
-    int countsPerInch;
     float wheelPowerTlBr;
     double robotEncoderWheelDistance;
     double horizontalTickOffsetRadians;
@@ -53,8 +53,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     //Files to access the algorithm constants
     private File robotEncoderWheelDistanceFile = AppUtil.getInstance().getSettingsFile("robotEncoderWheelDistance.txt");
     private File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
-
-    OdometryPipeline Odometry = new OdometryPipeline(1875);
 
     /**
      * Describe this function...
@@ -107,7 +105,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     @Override
     public void runOpMode() {
         ElapsedTime Timer;
-        int colorNumber;
+        int colorNumber = 0;
 
         FR = hardwareMap.get(DcMotor.class, "FR");
         FL = hardwareMap.get(DcMotor.class, "FL");
@@ -122,7 +120,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         color1 = hardwareMap.get(ColorSensor.class, "color1");
 
         // Initialize variables.
-        countsPerInch = 1875;
         robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(robotEncoderWheelDistanceFile).trim());
         horizontalTickOffsetRadians = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
         previousLeftEncoderPosition = 0;
@@ -164,24 +161,89 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         // Initialize robot position and junction position
         junctionCoordinates = new Position(DistanceUnit.INCH, 48, 72, 16.25, System.nanoTime());
 
+        //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
+        globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50);
+        Thread positionThread = new Thread(globalPositionUpdate);
+        positionThread.start();
+
         waitForStart();
         if (opModeIsActive()) {
+            //robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
             //spinner.setTargetPosition(DegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
             //verticalArm.setTargetPosition(-DegreesToTicks((int) Arm.getArmTargetDegrees()));
             //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
-            while (opModeIsActive()) {
-                Odometry.Odometry();
-                robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
-                telemetry.addData("XCoordinate", Odometry.getXCoordinate());
-                telemetry.addData("YCoordinate", Odometry.getYCoordinate());
-                telemetry.addData("XCoordinateInches", Odometry.getXCoordinateInches());
-                telemetry.addData("YCoordinateInches", Odometry.getYCoordinateInches());
-                telemetry.addData("OrientationRadians", Odometry.getOrientationRadians());
-                telemetry.addData("OrientationDegrees", Math.toDegrees(Odometry.getOrientationRadians()));
-                telemetry.update();
+
+            claw.setPower(-1);
+            BL.setPower(0.3);
+            BR.setPower(0.3);
+            FL.setPower(0.3);
+            FR.setPower(0.3);
+            Timer = new ElapsedTime();
+            Timer.reset();
+            while (opModeIsActive() && ((DistanceSensor) color1).getDistance(DistanceUnit.INCH) >= 1 && Timer.seconds() <= 3) {
             }
-            // end
+            BL.setPower(0);
+            BR.setPower(0);
+            FL.setPower(0);
+            FR.setPower(0);
+            sleep(1000);
+            if (opModeIsActive() && ((DistanceSensor) color1).getDistance(DistanceUnit.INCH) <= 1) {
+                if (opModeIsActive() && color1.red() > color1.blue() && color1.red() > color1.green()) {
+                    colorNumber = 1;
+                } else if (opModeIsActive() && color1.green() > color1.blue() && color1.green() > color1.red()) {
+                    colorNumber = 2;
+                } else if (opModeIsActive() && color1.blue() > color1.red() && color1.blue() > color1.green()) {
+                    colorNumber = 3;
+                }
+                BL.setPower(0.3);
+                BR.setPower(0.3);
+                FL.setPower(0.3);
+                FR.setPower(0.3);
+                sleep(2000);
+                BL.setPower(0);
+                BR.setPower(0);
+                FL.setPower(0);
+                FR.setPower(0);
+                sleep(1000);
+                extender.setPower(0.5);
+                spinner.setPower(0.2);
+                verticalArm.setPower(1);
+                verticalArm.setTargetPosition(-2296);
+                sleep(4000);
+                extender.setTargetPosition(-976);
+                spinner.setTargetPosition(1317);
+                clawLift.setPosition(0.27);
+                sleep(5000);
+                claw.setPower(1);
+                sleep(1000);
+                claw.setPower(0);
+                clawLift.setPosition(1);
+                extender.setTargetPosition(0);
+                spinner.setPower(0.3);
+                spinner.setTargetPosition(0);
+                verticalArm.setPower(0.5);
+                verticalArm.setTargetPosition(2200);
+                sleep(4000);
+                if (colorNumber == 1) {
+                    moveForward(0.8);
+                    moveBackward(0.2);
+                    moveLeft(1.4);
+                    moveBackward(0.5);
+                } else if (colorNumber == 3) {
+                    moveForward(0.4);
+                    moveBackward(0.2);
+                    moveRight(1.5);
+                    moveBackward(0.5);
+                }
+            }
+            verticalArm.setTargetPosition(2200);
+            clawLift.setPosition(1);
+            claw.setPower(0);
+            while (opModeIsActive()) {
+            }
         }
+        //Stop the thread
+        globalPositionUpdate.stop();
     }
 
 
