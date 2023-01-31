@@ -169,8 +169,8 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             //robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
-            //spinner.setTargetPosition(DegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
-            //verticalArm.setTargetPosition(-DegreesToTicks((int) Arm.getArmTargetDegrees()));
+            //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
+            //verticalArm.setTargetPosition(-armDegreesToTicks((int) Arm.getArmTargetDegrees()));
             //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
 
             claw.setPower(-1);
@@ -323,11 +323,15 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         }
     }
 
-    private int DegreesToTicks(int Degrees) {
-        return Degrees * (16384 / 360);
+    private int spinnerDegreesToTicks(int Degrees) {
+        return Degrees * (2030 / 180);
+    }
+
+    private int armDegreesToTicks(int Degrees) {
+        return Degrees * (977 / 45);
     }
 
     private int InchesToTicks(int Inches) {
-        return -(Inches * 118);
+        return -(Inches * 113);
     }
 }
