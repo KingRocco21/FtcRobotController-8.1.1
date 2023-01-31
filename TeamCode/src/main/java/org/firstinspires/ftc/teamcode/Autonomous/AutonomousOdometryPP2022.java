@@ -55,6 +55,8 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     private File robotEncoderWheelDistanceFile = AppUtil.getInstance().getSettingsFile("robotEncoderWheelDistance.txt");
     private File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
 
+    OdometryPipeline Odometry = new OdometryPipeline(1875);
+
     /**
      * Describe this function...
      */
@@ -97,46 +99,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         // Init IMU with these parameters
         imu.initialize(IMUparameters);
         telemetry.addData("Status", "IMU initialized");
-        telemetry.update();
-    }
-
-    /**
-     * This function calculates the x and y position of the robot, along with its orientation.
-     */
-    private void Odometry() {
-        double leftChange;
-        double rightChange;
-        double changeInRobotOrientation;
-        double rawHorizontalChange;
-        double horizontalChange;
-        double verticalChange;
-
-        // Save the change in each encoder position to a variable
-        leftChange = leftEncoder.getCurrentPosition() - previousLeftEncoderPosition;
-        rightChange = BL.getCurrentPosition() - previousRightEncoderPosition;
-        // Calculate Angle
-        changeInRobotOrientation = (leftChange - rightChange) / robotEncoderWheelDistance;
-        robotOrientationRadians += changeInRobotOrientation;
-        // Calculate the horizontal change using the middle encoder
-        rawHorizontalChange = FR.getCurrentPosition() - previousNormalEncoderPosition;
-        horizontalChange = rawHorizontalChange - (changeInRobotOrientation * horizontalTickOffsetRadians);
-        verticalChange = (rightChange + leftChange) / 2;
-        // Calculate Position
-        robotXCoordinate += verticalChange * Math.sin(robotOrientationRadians) + horizontalChange * Math.cos(robotOrientationRadians);
-        robotYCoordinate += verticalChange * Math.cos(robotOrientationRadians) - horizontalChange * Math.sin(robotOrientationRadians);
-        // Converts the X and Y coordinates to inches
-        robotXCoordinateInches = robotXCoordinate / countsPerInch;
-        robotYCoordinateInches = robotYCoordinate / countsPerInch;
-        // Save the position values to variables for use in the next loop
-        previousLeftEncoderPosition = leftEncoder.getCurrentPosition();
-        previousRightEncoderPosition = BL.getCurrentPosition();
-        previousNormalEncoderPosition = FR.getCurrentPosition();
-        telemetry.addData("robotXCoordinate", robotXCoordinate);
-        telemetry.addData("robotYCoordinate", robotYCoordinate);
-        telemetry.addData("robotXCoordinateInches", robotXCoordinateInches);
-        telemetry.addData("robotYCoordinateInches", robotYCoordinateInches);
-        telemetry.addData("robotOrientationRadians", robotOrientationRadians);
-        telemetry.addData("robotOrientationDegrees", Math.toDegrees(robotOrientationRadians));
         telemetry.update();
     }
 
@@ -203,8 +165,15 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                Odometry();
+                Odometry.Odometry();
                 robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
+                telemetry.addData("XCoordinate", Odometry.getXCoordinate());
+                telemetry.addData("YCoordinate", Odometry.getYCoordinate());
+                telemetry.addData("XCoordinateInches", Odometry.getXCoordinateInches());
+                telemetry.addData("YCoordinateInches", Odometry.getYCoordinateInches());
+                telemetry.addData("OrientationRadians", Odometry.getOrientationRadians());
+                telemetry.addData("OrientationDegrees", Math.toDegrees(Odometry.getOrientationRadians()));
+                telemetry.update();
             }
             // end
         }
