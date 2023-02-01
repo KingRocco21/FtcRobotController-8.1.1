@@ -10,8 +10,6 @@ import java.io.File;
 public class globalOdometryPositioning implements Runnable{
 
     private DcMotor FR;
-    private DcMotor FL;
-    private DcMotor BR;
     private DcMotor BL;
     private DcMotor leftEncoder;
 
@@ -44,8 +42,12 @@ public class globalOdometryPositioning implements Runnable{
      * Constructor for GlobalCoordinatePosition Thread
      * @param threadSleepDelay delay in milliseconds for the GlobalPositionUpdate thread (50-75 milliseconds is suggested)
      */
-    public globalOdometryPositioning(int threadSleepDelay) {
+    public globalOdometryPositioning(int threadSleepDelay, DcMotor BLm, DcMotor FRm, DcMotor leftEncoderm) {
         sleepTime = threadSleepDelay;
+        BL = BLm;
+        FR = FRm;
+        leftEncoder = leftEncoderm;
+
     }
     /**
     * Updates the global (x, y, theta) coordinate position of the robot using the odometry encoders

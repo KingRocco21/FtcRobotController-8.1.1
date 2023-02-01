@@ -148,6 +148,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
         FR.setDirection(DcMotorSimple.Direction.REVERSE);
         BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        BR.setDirection(DcMotorSimple.Direction.REVERSE);
         extender.setTargetPosition(0);
         extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         spinner.setTargetPosition(0);
@@ -163,12 +164,13 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         // Initialize robot position and junction position
         junctionCoordinates = new Position(DistanceUnit.INCH, 47, 23.5, 16.25, System.nanoTime());
 
+        waitForStart();
+
         //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
-        globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50);
+        globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50, BL, FR, leftEncoder);
         Thread positionThread = new Thread(globalPositionUpdate);
         positionThread.start();
 
-        waitForStart();
         if (opModeIsActive()) {
             //robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
             //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
@@ -176,7 +178,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
             //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
 
             claw.setPower(-1);
-            BL.setPower(0.3);
+            BL.setPower(-0.3);
             BR.setPower(0.3);
             FL.setPower(0.3);
             FR.setPower(0.3);
