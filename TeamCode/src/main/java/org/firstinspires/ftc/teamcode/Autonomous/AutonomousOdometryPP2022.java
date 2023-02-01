@@ -159,7 +159,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         clawLift.setPosition(1);
 
         // Initialize robot position and junction position
-        junctionCoordinates = new Position(DistanceUnit.INCH, 48, 72, 16.25, System.nanoTime());
+        junctionCoordinates = new Position(DistanceUnit.INCH, 47, 23.5, 16.25, System.nanoTime());
 
         //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
         globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50);
