@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;
 
-@Autonomous(name = "AutonomousOdometryPP2022 Blocks to Java", preselectTeleOp = "TeleOp")
+@Autonomous(name = "AutonomousOdometryPP2022 Java", preselectTeleOp = "TeleOp")
 public class AutonomousOdometryPP2022 extends LinearOpMode {
 
     private DcMotor FR;
@@ -117,6 +117,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         spinner = hardwareMap.get(DcMotor.class, "spinner");
         verticalArm = hardwareMap.get(DcMotor.class, "verticalArm");
         clawLift = hardwareMap.get(Servo.class, "clawLift");
+        claw = hardwareMap.get(CRServo.class, "claw");
         color1 = hardwareMap.get(ColorSensor.class, "color1");
 
         // Initialize variables.
@@ -157,6 +158,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         extender.setPower(1);
         spinner.setPower(1);
         clawLift.setPosition(1);
+        claw.setPower(1);
 
         // Initialize robot position and junction position
         junctionCoordinates = new Position(DistanceUnit.INCH, 47, 23.5, 16.25, System.nanoTime());
