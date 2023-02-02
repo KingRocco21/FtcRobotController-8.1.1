@@ -249,7 +249,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 telemetry.addData("X Coordinate Inches", robotXCoordinateInches);
                 telemetry.addData("Y Coordinate Inches", robotYCoordinateInches);
                 telemetry.addData("Orientation Degrees", (Math.toDegrees(robotOrientationRadians) % 360));
-
+                telemetry.update();
             }
             //Stop the thread
             globalPositionUpdate.stop();
