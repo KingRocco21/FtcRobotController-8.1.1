@@ -177,6 +177,8 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
             Thread positionThread = new Thread(globalPositionUpdate);
             positionThread.start();
 
+            sleep(500);
+
             claw.setPower(-1);
             BL.setPower(-0.3);
             BR.setPower(0.3);
