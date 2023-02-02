@@ -166,16 +166,16 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
 
         waitForStart();
 
-        //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
-        globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50, BL, FR, leftEncoder);
-        Thread positionThread = new Thread(globalPositionUpdate);
-        positionThread.start();
-
         if (opModeIsActive()) {
             //robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
             //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
             //verticalArm.setTargetPosition(-armDegreesToTicks((int) Arm.getArmTargetDegrees()));
             //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
+
+            //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
+            globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50, BL, FR, leftEncoder);
+            Thread positionThread = new Thread(globalPositionUpdate);
+            positionThread.start();
 
             claw.setPower(-1);
             BL.setPower(-0.3);
@@ -245,9 +245,9 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
             claw.setPower(0);
             while (opModeIsActive()) {
             }
+            //Stop the thread
+            globalPositionUpdate.stop();
         }
-        //Stop the thread
-        globalPositionUpdate.stop();
     }
 
 
