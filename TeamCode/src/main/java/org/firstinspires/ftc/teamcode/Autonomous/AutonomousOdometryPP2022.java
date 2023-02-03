@@ -38,17 +38,9 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     float wheelPowerTlBr;
     double robotEncoderWheelDistance;
     double horizontalTickOffsetRadians;
-    double robotXCoordinate;
-    double robotYCoordinate;
-    double robotOrientationRadians;
-    double previousLeftEncoderPosition;
-    double previousRightEncoderPosition;
-    double previousNormalEncoderPosition;
-    double robotXCoordinateInches;
-    double robotYCoordinateInches;
 
-    Position junctionCoordinates;
-    Position robotPosition;
+    public static Position junctionCoordinates;
+    public static Position robotPosition;
 
     //Files to access the algorithm constants
     private File robotEncoderWheelDistanceFile = AppUtil.getInstance().getSettingsFile("robotEncoderWheelDistance.txt");
@@ -61,7 +53,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FR.setPower(0.3);
         FL.setPower(0.3);
         BR.setPower(0.3);
-        BL.setPower(0.3);
+        BL.setPower(-0.3);
         sleep((long) (1000 * forwardSeconds));
         FR.setPower(0);
         FL.setPower(0);
@@ -123,14 +115,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         // Initialize variables.
         robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(robotEncoderWheelDistanceFile).trim());
         horizontalTickOffsetRadians = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
-        previousLeftEncoderPosition = 0;
-        previousRightEncoderPosition = 0;
-        previousNormalEncoderPosition = 0;
-        robotOrientationRadians = 0;
-        robotXCoordinate = 0;
-        robotYCoordinate = 0;
-        robotXCoordinateInches = 0;
-        robotYCoordinateInches = 0;
 
         // Initialize motors and encoders.
         BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -151,6 +135,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
         extender.setTargetPosition(0);
         extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extender.setDirection(DcMotorSimple.Direction.REVERSE);
         spinner.setTargetPosition(0);
         spinner.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         verticalArm.setTargetPosition(2200);
@@ -162,15 +147,11 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         claw.setPower(1);
 
         // Initialize robot position and junction position
-        junctionCoordinates = new Position(DistanceUnit.INCH, 47, 23.5, 16.25, System.nanoTime());
+        junctionCoordinates = new Position(DistanceUnit.INCH, 47, 47, 30, System.nanoTime());
 
         waitForStart();
 
         if (opModeIsActive()) {
-            //robotPosition = new Position(DistanceUnit.INCH, robotXCoordinateInches, robotYCoordinateInches, 0, System.nanoTime());
-            //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
-            //verticalArm.setTargetPosition(-armDegreesToTicks((int) Arm.getArmTargetDegrees()));
-            //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
 
             //Create and start GlobalCoordinatePosition thread to constantly update the global coordinate positions\
             globalOdometryPositioning globalPositionUpdate = new globalOdometryPositioning(50, BL, FR, leftEncoder);
@@ -201,7 +182,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 } else if (opModeIsActive() && color1.blue() > color1.red() && color1.blue() > color1.green()) {
                     colorNumber = 3;
                 }
-                BL.setPower(0.3);
+                BL.setPower(-0.3);
                 BR.setPower(0.3);
                 FL.setPower(0.3);
                 FR.setPower(0.3);
@@ -211,6 +192,27 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 FL.setPower(0);
                 FR.setPower(0);
                 sleep(1000);
+                extender.setPower(0.5);
+                spinner.setPower(0.2);
+                verticalArm.setPower(1);
+                robotPosition = new Position(DistanceUnit.INCH, globalPositionUpdate.getXCoordinateInches(), globalPositionUpdate.getYCoordinateInches(), 15.75, System.nanoTime());
+                verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
+                sleep(3000);
+                spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
+                extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
+                sleep(4000);
+                clawLift.setPosition(-1);
+                sleep(1000);
+                claw.setPower(1);
+                sleep(1000);
+                claw.setPower(0);
+                clawLift.setPosition(1);
+                extender.setTargetPosition(0);
+                spinner.setPower(0.3);
+                spinner.setTargetPosition(0);
+                verticalArm.setPower(0.5);
+                verticalArm.setTargetPosition(2200);
+                /*
                 extender.setPower(0.5);
                 spinner.setPower(0.2);
                 verticalArm.setPower(1);
@@ -229,6 +231,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 spinner.setTargetPosition(0);
                 verticalArm.setPower(0.5);
                 verticalArm.setTargetPosition(2200);
+                */
                 sleep(4000);
                 if (colorNumber == 1) {
                     moveForward(0.8);
@@ -242,13 +245,13 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                     moveBackward(0.5);
                 }
             }
-            verticalArm.setTargetPosition(2200);
+            verticalArm.setTargetPosition(0);
             clawLift.setPosition(1);
             claw.setPower(0);
             while (opModeIsActive()) {
-                telemetry.addData("X Coordinate Inches", robotXCoordinateInches);
-                telemetry.addData("Y Coordinate Inches", robotYCoordinateInches);
-                telemetry.addData("Orientation Degrees", (Math.toDegrees(robotOrientationRadians) % 360));
+                telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
+                telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
+                telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
                 telemetry.update();
             }
             //Stop the thread
@@ -264,7 +267,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FR.setPower(-0.5);
         FL.setPower(-0.5);
         BR.setPower(-0.5);
-        BL.setPower(-0.5);
+        BL.setPower(0.5);
         sleep((long) (1000 * backwardSeconds));
         FR.setPower(0);
         FL.setPower(0);
@@ -279,7 +282,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FR.setPower(0.5);
         FL.setPower(-0.5);
         BR.setPower(-0.5);
-        BL.setPower(0.5);
+        BL.setPower(-0.5);
         sleep((long) (1000 * leftSeconds));
         FR.setPower(0);
         FL.setPower(0);
@@ -294,22 +297,12 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FR.setPower(-0.5);
         FL.setPower(0.5);
         BR.setPower(0.5);
-        BL.setPower(-0.5);
+        BL.setPower(0.5);
         sleep((long) (1000 * rightSeconds));
         FR.setPower(0);
         FL.setPower(0);
         BR.setPower(0);
         BL.setPower(0);
-    }
-
-    /**
-     * Describe this function...
-     */
-    private void goToPosition(int xInches, int yInches, int motorPower, int desiredOrientation) {
-        direction_factor(getZAngle() - desiredOrientation);
-        while (xInches != robotXCoordinateInches && yInches != robotXCoordinateInches) {
-        }
-        FL.setPower(wheelPowerTlBr);
     }
 
     /**
@@ -338,10 +331,10 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     private int armDegreesToTicks(int Degrees) {
-        return Degrees * (977 / 45);
+        return Degrees * (-2644/80);
     }
 
     private int InchesToTicks(int Inches) {
-        return -(Inches * 113);
+        return (Inches * (1425/13));
     }
 }

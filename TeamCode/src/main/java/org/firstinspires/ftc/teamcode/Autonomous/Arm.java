@@ -21,20 +21,17 @@ public class Arm {
         armTargetDegrees = Math.toDegrees(Math.atan2(pos.z, Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2))));
         // Set Extender Distance using Distance Formula
         extenderTargetDistance = Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2) + Math.pow(pos.z, 2));
-        double  extenderTargetDistance = Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2) + Math.pow(pos.z, 2));
-        if (spinnerTargetDegrees < 0) {
-            spinnerTargetDegrees += 180;
-        } else if (spinnerTargetDegrees >= 0) {
-            spinnerTargetDegrees += -180;
-        }
     }
     public static double getSpinnerTargetDegrees() {
+        MoveArmPosition(AutonomousOdometryPP2022.junctionCoordinates, AutonomousOdometryPP2022.robotPosition);
         return spinnerTargetDegrees;
     }
     public static double getArmTargetDegrees() {
+        MoveArmPosition(AutonomousOdometryPP2022.junctionCoordinates, AutonomousOdometryPP2022.robotPosition);
         return armTargetDegrees;
     }
     public static double getExtenderTargetDistance() {
+        MoveArmPosition(AutonomousOdometryPP2022.junctionCoordinates, AutonomousOdometryPP2022.robotPosition);
         return extenderTargetDistance;
     }
 }
