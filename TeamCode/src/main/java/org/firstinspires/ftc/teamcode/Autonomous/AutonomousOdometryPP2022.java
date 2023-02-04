@@ -146,7 +146,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         clawLift.setPosition(1);
         claw.setPower(1);
 
-        // Initialize robot position and junction position
+        // Initialize junction position
         junctionCoordinates = new Position(DistanceUnit.INCH, 47, 47, 30, System.nanoTime());
 
         waitForStart();
@@ -196,6 +196,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 spinner.setPower(0.2);
                 verticalArm.setPower(1);
                 robotPosition = new Position(DistanceUnit.INCH, globalPositionUpdate.getXCoordinateInches(), globalPositionUpdate.getYCoordinateInches(), 15.75, System.nanoTime());
+                Arm.MoveArmPosition(junctionCoordinates, robotPosition, globalPositionUpdate.getOrientationDegrees());
                 verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
                 sleep(3000);
                 spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
