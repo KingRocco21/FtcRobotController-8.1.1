@@ -202,7 +202,12 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
                 extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
                 sleep(4000);
-                clawLift.setPosition(-1);
+                clawLift.setPosition(0.247);
+                telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
+                telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
+                telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
+                telemetry.addData("Extender", extender.getCurrentPosition());
+                telemetry.update();
                 sleep(1000);
                 claw.setPower(1);
                 sleep(1000);
@@ -253,6 +258,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
                 telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
                 telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
+                telemetry.addData("Extender", extender.getCurrentPosition());
                 telemetry.update();
             }
             //Stop the thread
@@ -336,6 +342,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     private int InchesToTicks(int Inches) {
-        return (Inches * (1425/13));
+        return (Inches * (3041/21));
     }
 }
