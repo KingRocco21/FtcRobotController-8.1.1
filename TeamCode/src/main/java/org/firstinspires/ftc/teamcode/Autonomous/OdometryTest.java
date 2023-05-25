@@ -81,16 +81,14 @@ public class OdometryTest extends LinearOpMode {
         extender.setDirection(DcMotorSimple.Direction.REVERSE);
         spinner.setTargetPosition(0);
         spinner.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        verticalArm.setTargetPosition(2200);
+        verticalArm.setTargetPosition(0);
         verticalArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         verticalArm.setPower(1);
         extender.setPower(1);
         spinner.setPower(1);
-        clawLift.setPosition(1);
-        claw.setPower(1);
 
         // Initialize junction position
-        junctionCoordinates = new Position(DistanceUnit.INCH, 5, 5, 30, System.nanoTime());
+        junctionCoordinates = new Position(DistanceUnit.INCH, 20, 20, 30, System.nanoTime());
 
         waitForStart();
 
@@ -104,32 +102,23 @@ public class OdometryTest extends LinearOpMode {
             sleep(500);
 
             extender.setPower(0.5);
-            spinner.setPower(0.2);
+            spinner.setPower(0.1);
             verticalArm.setPower(1);
             robotPosition = new Position(DistanceUnit.INCH, globalPositionUpdate.getXCoordinateInches(), globalPositionUpdate.getYCoordinateInches(), 15.75, System.nanoTime());
             Arm.MoveArmPosition(junctionCoordinates, robotPosition, globalPositionUpdate.getOrientationDegrees());
-            verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
-            sleep(3000);
-            spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
-            extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
-            sleep(4000);
+            //verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
+            //sleep(3000);
+            //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
+            //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
+            //sleep(4000);
             clawLift.setPosition(0.247);
-            telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
-            telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
-            telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
-            telemetry.addData("Extender", extender.getCurrentPosition());
+            telemetry.addData("Arm Attempted Position", Arm.getArmTargetDegrees());
+            telemetry.addData("Spinner Attempted Position", Arm.getSpinnerTargetDegrees());
+            telemetry.addData("Extender Attempted Position", Arm.getExtenderTargetDistance());
             telemetry.update();
 
-            verticalArm.setTargetPosition(0);
-            clawLift.setPosition(1);
-            claw.setPower(0);
-            while (opModeIsActive()) {
-                telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
-                telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
-                telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
-                telemetry.addData("Extender", extender.getCurrentPosition());
-                telemetry.update();
-            }
+            sleep(10000);
+
             //Stop the thread
             globalPositionUpdate.stop();
         }

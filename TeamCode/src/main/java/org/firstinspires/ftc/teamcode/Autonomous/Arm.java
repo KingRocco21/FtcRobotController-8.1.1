@@ -20,6 +20,7 @@ public class Arm {
         // Set Spinner Target to the tan of x and y, converting it to degrees
         spinnerTargetDegrees = Math.toDegrees(Math.atan2(pos.y, pos.x));
         spinnerTargetDegrees -= rotation;
+        spinnerTargetDegrees = (spinnerTargetDegrees + 180) % 360;
         // Set Arm Target to tan of of horizontal distance and Z, converting it to degrees
         armTargetDegrees = Math.toDegrees(Math.atan2(pos.z, Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2))));
         // Set Extender Distance using Distance Formula
