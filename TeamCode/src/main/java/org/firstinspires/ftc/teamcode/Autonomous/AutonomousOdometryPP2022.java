@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;
 
-@Autonomous(name = "AutonomousOdometryPP2022 Java", preselectTeleOp = "TeleOp")
+@Autonomous(name = "AutonomousOdometryPP2022 Java", preselectTeleOp = "TeleOp 2022")
 public class AutonomousOdometryPP2022 extends LinearOpMode {
 
     private DcMotor FR;
