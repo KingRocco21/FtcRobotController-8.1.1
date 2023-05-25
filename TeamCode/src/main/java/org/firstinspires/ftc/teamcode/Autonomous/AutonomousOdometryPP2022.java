@@ -334,14 +334,14 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     private int spinnerDegreesToTicks(int Degrees) {
-        return Degrees * (2030 / 180);
+        return Degrees * (1000 / 90);
     }
 
     private int armDegreesToTicks(int Degrees) {
-        return Degrees * (-2644/80);
+        return Degrees * (-1705/80);
     }
 
     private int InchesToTicks(int Inches) {
-        return (Inches * (3041/21));
+        return (Inches * (2361/20));
     }
 }
