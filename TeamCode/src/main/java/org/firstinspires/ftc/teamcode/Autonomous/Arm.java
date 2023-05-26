@@ -19,8 +19,7 @@ public class Arm {
         // Move Arm to an XYZ Coordinate (Inches)
         // Set Spinner Target to the tan of x and y, converting it to degrees
         spinnerTargetDegrees = Math.toDegrees(Math.atan2(pos.y, pos.x));
-        spinnerTargetDegrees -= rotation;
-        spinnerTargetDegrees = (spinnerTargetDegrees + 180) % 360;
+        spinnerTargetDegrees = spinnerTargetDegrees - rotation + 90; // 90 degrees to correct for the arm facing backwards
         // Set Arm Target to tan of of horizontal distance and Z, converting it to degrees
         armTargetDegrees = Math.toDegrees(Math.atan2(pos.z, Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2))));
         // Set Extender Distance using Distance Formula
