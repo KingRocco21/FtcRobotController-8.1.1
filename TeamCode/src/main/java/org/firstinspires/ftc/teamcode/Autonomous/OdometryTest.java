@@ -106,11 +106,11 @@ public class OdometryTest extends LinearOpMode {
             verticalArm.setPower(1);
             robotPosition = new Position(DistanceUnit.INCH, globalPositionUpdate.getXCoordinateInches(), globalPositionUpdate.getYCoordinateInches(), 15.75, System.nanoTime());
             Arm.MoveArmPosition(junctionCoordinates, robotPosition, globalPositionUpdate.getOrientationDegrees());
-            verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
-            sleep(3000);
-            spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
-            extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
-            sleep(4000);
+            //verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
+            //sleep(3000);
+            //spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
+            //extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
+            //sleep(4000);
             clawLift.setPosition(0.247);
             telemetry.addData("Arm Attempted Position", Arm.getArmTargetDegrees());
             telemetry.addData("Spinner Attempted Position", Arm.getSpinnerTargetDegrees());

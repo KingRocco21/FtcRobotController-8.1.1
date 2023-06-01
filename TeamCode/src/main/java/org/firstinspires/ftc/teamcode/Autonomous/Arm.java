@@ -9,6 +9,7 @@ public class Arm {
     private static double armTargetDegrees;
     private static double extenderTargetDistance;
     private static final double distToArm = 4;
+    private static final double armRadius = 22;
 
     public Arm(){}
 
@@ -23,7 +24,7 @@ public class Arm {
         // Set Arm Target to tan of of horizontal distance and Z, converting it to degrees
         armTargetDegrees = Math.toDegrees(Math.atan2(pos.z, Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2))));
         // Set Extender Distance using Distance Formula
-        extenderTargetDistance = Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2) + Math.pow(pos.z, 2));
+        extenderTargetDistance = Math.sqrt(Math.pow(pos.x, 2) + Math.pow(pos.y, 2) + Math.pow(pos.z, 2)) - armRadius;
     }
     public static double getSpinnerTargetDegrees() {
         return spinnerTargetDegrees;
