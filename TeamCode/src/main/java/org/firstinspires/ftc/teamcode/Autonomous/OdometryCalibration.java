@@ -100,7 +100,6 @@ public class OdometryCalibration extends LinearOpMode {
         telemetry.addData("Horizontal Position", FR.getCurrentPosition());
         telemetry.addData("Vertical Encoder Offset", verticalEncoderTickOffsetPerDegree);
 
-        //Update values
         telemetry.update();
     }
 

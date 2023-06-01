@@ -129,6 +129,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
             sleep(500);
 
             claw.setPower(-1);
+            sleep(500);
             BL.setPower(-0.3);
             BR.setPower(0.3);
             FL.setPower(0.3);
@@ -165,6 +166,9 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 verticalArm.setPower(1);
                 robotPosition = new Position(DistanceUnit.INCH, globalPositionUpdate.getXCoordinateInches(), globalPositionUpdate.getYCoordinateInches(), 15.75, System.nanoTime());
                 Arm.MoveArmPosition(junctionCoordinates, robotPosition, globalPositionUpdate.getOrientationDegrees());
+                telemetry.addData("X Inches", globalPositionUpdate.getXCoordinateInches());
+                telemetry.addData("Y Inches", globalPositionUpdate.getYCoordinateInches());
+                telemetry.update();
                 verticalArm.setTargetPosition(armDegreesToTicks((int) Arm.getArmTargetDegrees()));
                 sleep(3000);
                 spinner.setTargetPosition(spinnerDegreesToTicks((int) Arm.getSpinnerTargetDegrees()));
