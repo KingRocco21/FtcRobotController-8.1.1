@@ -26,7 +26,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     private DcMotor FL;
     private DcMotor BR;
     private DcMotor BL;
-    private BNO055IMU imu;
     private DcMotor leftEncoder;
     private DcMotor extender;
     private DcMotor spinner;
@@ -62,36 +61,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
     }
 
     /**
-     * Describe this function...
-     */
-    private float getZAngle() {
-        return -imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle;
-    }
-
-    /**
-     * This function Initializes the IMU to get the Z Angle later.
-     */
-    private void Initialize_IMU() {
-        BNO055IMU.Parameters IMUparameters;
-
-        // Create a new IMU Parameters Object
-        IMUparameters = new BNO055IMU.Parameters();
-        // Set IMU mode to IMU so it callibrates itself
-        IMUparameters.mode = BNO055IMU.SensorMode.IMU;
-        // Use Degrees as angle unit
-        IMUparameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        // Use meters/sec as unit of acceleration
-        IMUparameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        // Warn driver this may take several seconds!
-        telemetry.addData("Status", "init IMU, please wait");
-        telemetry.update();
-        // Init IMU with these parameters
-        imu.initialize(IMUparameters);
-        telemetry.addData("Status", "IMU initialized");
-        telemetry.update();
-    }
-
-    /**
      * This function is executed when this Op Mode is selected from the Driver Station.
      */
     @Override
@@ -103,7 +72,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FL = hardwareMap.get(DcMotor.class, "FL");
         BR = hardwareMap.get(DcMotor.class, "BR");
         BL = hardwareMap.get(DcMotor.class, "BL");
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
         leftEncoder = hardwareMap.get(DcMotor.class, "leftEncoder");
         extender = hardwareMap.get(DcMotor.class, "extender");
         spinner = hardwareMap.get(DcMotor.class, "spinner");
@@ -203,11 +171,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 extender.setTargetPosition(InchesToTicks((int) Arm.getExtenderTargetDistance()));
                 sleep(4000);
                 clawLift.setPosition(0.247);
-                telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
-                telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
-                telemetry.addData("Orientation Degrees", globalPositionUpdate.getOrientationDegrees());
-                telemetry.addData("Extender", extender.getCurrentPosition());
-                telemetry.update();
                 sleep(1000);
                 claw.setPower(1);
                 sleep(1000);
@@ -217,27 +180,7 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                 spinner.setPower(0.3);
                 spinner.setTargetPosition(0);
                 verticalArm.setPower(0.5);
-                verticalArm.setTargetPosition(2200);
-                /*
-                extender.setPower(0.5);
-                spinner.setPower(0.2);
-                verticalArm.setPower(1);
-                verticalArm.setTargetPosition(-2296);
-                sleep(4000);
-                extender.setTargetPosition(-976);
-                spinner.setTargetPosition(1317);
-                clawLift.setPosition(0.27);
-                sleep(5000);
-                claw.setPower(1);
-                sleep(1000);
-                claw.setPower(0);
-                clawLift.setPosition(1);
-                extender.setTargetPosition(0);
-                spinner.setPower(0.3);
-                spinner.setTargetPosition(0);
-                verticalArm.setPower(0.5);
-                verticalArm.setTargetPosition(2200);
-                */
+                verticalArm.setTargetPosition(0);
                 sleep(4000);
                 if (colorNumber == 1) {
                     moveForward(0.8);
@@ -251,9 +194,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
                     moveBackward(0.5);
                 }
             }
-            verticalArm.setTargetPosition(0);
-            clawLift.setPosition(1);
-            claw.setPower(0);
             while (opModeIsActive()) {
                 telemetry.addData("X Coordinate Inches", globalPositionUpdate.getXCoordinateInches());
                 telemetry.addData("Y Coordinate Inches", globalPositionUpdate.getYCoordinateInches());
@@ -310,27 +250,6 @@ public class AutonomousOdometryPP2022 extends LinearOpMode {
         FL.setPower(0);
         BR.setPower(0);
         BL.setPower(0);
-    }
-
-    /**
-     * Describe this function...
-     */
-    private void direction_factor(float heading) {
-        float wheelPowerTrBl;
-
-        if (heading >= 0 && heading < 90) {
-            wheelPowerTlBr = 1;
-            wheelPowerTrBl = heading * -4 + 1;
-        } else if (heading >= 90 && heading < 180) {
-            wheelPowerTrBl = -1;
-            wheelPowerTlBr = heading * -4 + 3;
-        } else if (heading >= 180 && heading < 270) {
-            wheelPowerTlBr = -1;
-            wheelPowerTrBl = heading * 4 - 5;
-        } else if (heading >= 270 && heading < 360) {
-            wheelPowerTrBl = 1;
-            wheelPowerTlBr = heading * 4 - 7;
-        }
     }
 
     private int spinnerDegreesToTicks(int Degrees) {

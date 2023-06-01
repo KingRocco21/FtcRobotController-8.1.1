@@ -26,8 +26,8 @@ public class globalOdometryPositioning implements Runnable{
     private final int countsPerInch = 1875;
 
     // Position Variables
-    private volatile double robotXCoordinate = 0; // LEFT SIDE STARTING VALUES
-    private volatile double robotYCoordinate = 0; // LEFT SIDE STARTING VALUES
+    private volatile double robotXCoordinate = 66093.75; // LEFT SIDE STARTING VALUES
+    private volatile double robotYCoordinate = 22031.25; // LEFT SIDE STARTING VALUES
     private volatile double robotOrientationRadians = 0;
     private double previousLeftEncoderPosition = 0;
     private double previousRightEncoderPosition = 0;
